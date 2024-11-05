@@ -1,0 +1,36 @@
+    .bg {
+        position: relative;
+        /* Position ko relative set karna */
+        overflow: hidden;
+        /* Overflow ko hidden karna */
+    }
+
+    .bg::before {
+        content: "";
+        /* Pseudo-element ka content */
+        position: absolute;
+        /* Position ko absolute set karna */
+        top: 0;
+        /* Top ko 0 set karna */
+        left: 0;
+        /* Left ko 0 set karna */
+        right: 0;
+        /* Right ko 0 set karna */
+        bottom: 0;
+        /* Bottom ko 0 set karna */
+        background-image: url("./../../public/banner.jpg");
+        background-size: cover;
+        /* Background ko cover karna */
+        filter: blur(5px);
+        /* Yahan par filter apply karna */
+        filter: brightness(0.5);
+        z-index: 0;
+        /* Z-index ko 0 set karna */
+    }
+
+    .bg>* {
+        position: relative;
+        /* Content ko relative position dena */
+        z-index: 1;
+        /* Content ka z-index 1 set karna */
+    }
