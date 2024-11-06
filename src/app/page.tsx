@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, Search } from "lucide-react"
+import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, LogInIcon, LogIn } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import "./index.css"
@@ -16,17 +16,25 @@ export default function LandingPage() {
           <ShoppingCart className="h-6 w-6 mr-2 text-[#B17457]" />
           <span className="font-bold text-xl text-[#4A4947]">ShopEase</span>
         </Link>
+        <nav className="ml-auto flex gap-4 sm:gap-6 mr-5">
+          <Link className="text-m font-bold text-[#4A4947] hover:text-[#B17457] transition-colors" href="/SignUp">
+            Sign Up
+          </Link>
+          <Link className="text-m font-bold text-[#4A4947] hover:text-[#B17457] transition-colors" href="/login">
+            Login
+          </Link>
+        </nav>
       </header>
       <main className="flex-1">
         <section className="bg w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-[#D8D2C2] ">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4 text-center lg:text-left">
-                <div className="space-y-2">
+                <div className="">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-[#FAF7F0]">
                     Discover Natural Elegance
                   </h1>
-                  <p className="max-w-[600px] text-[#FAF7F0] md:text-xl">
+                  <p className="max-w-[600px] text-[#FAF7F0] md:text-xl mt-5 mb-2">
                     Explore our curated collection of sustainable and stylish products. Elevate your lifestyle with ShopEase.
                   </p>
                 </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -8,30 +8,57 @@ import { ShoppingCart, Search, Filter, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
-const products = [
-    { id: 1, name: "Eco-Friendly Water Bottle", price: 24.99, category: "Kitchen", image: "/placeholder.svg" },
-    { id: 2, name: "Organic Cotton T-Shirt", price: 34.99, category: "Clothing", image: "/placeholder.svg" },
-    { id: 3, name: "Recycled Leather Wallet", price: 49.99, category: "Accessories", image: "/placeholder.svg" },
-    { id: 4, name: "Bamboo Cutlery Set", price: 19.99, category: "Kitchen", image: "/placeholder.svg" },
-    { id: 5, name: "Natural Fiber Backpack", price: 79.99, category: "Accessories", image: "/placeholder.svg" },
-    { id: 6, name: "Sustainable Yoga Mat", price: 39.99, category: "Fitness", image: "/placeholder.svg" },
-    { id: 7, name: "Reusable Produce Bags", price: 14.99, category: "Kitchen", image: "/placeholder.svg" },
-    { id: 8, name: "Solar-Powered Lantern", price: 29.99, category: "Outdoor", image: "/placeholder.svg" },
-]
-
 export default function ProductShowcase() {
     const [searchTerm, setSearchTerm] = useState("")
     const [categoryFilter, setCategoryFilter] = useState("All")
     const [priceRange, setPriceRange] = useState([0, 100])
     const [isFilterVisible, setIsFilterVisible] = useState(true)
+    type Product = {
+        id: number;
+        title: string;
+        price: number;
+        description: string;
+        images: string[];
+        creationAt: Date;
+        updatedAt: Date;
+        category: {
+            id: number;
+            name: string;
+            image: string;
+            creationAt: Date;
+            updatedAt: Date;
+        };
+    };
 
+    const [products, setProducts] = useState<Product[]>([])
     const toggleFilters = () => setIsFilterVisible(!isFilterVisible)
+    async function fetchProducts() {
+        try {
+            const response = await fetch('http://localhost:5000/getProducts');
+            const data = await response.json();
+            setProducts(data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
+    }
 
     const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (categoryFilter === "All" || product.category === categoryFilter) &&
+        product.title && product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (categoryFilter === "All" || product.category.name === categoryFilter) &&
         product.price >= priceRange[0] && product.price <= priceRange[1]
     )
+
+    const parseImages = (images: string) => {
+        const urlMatch = images.match(/https?:\/\/[^\\\s"']+/);
+        const Parsed = "/" + urlMatch[0];
+        return Parsed;
+    };
+    useEffect(() => {
+        fetchProducts().then((products) => products.map((product) => {
+            const productImages = parseImages(product.images[0]);
+        }))
+    }, []);
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FAF7F0]">
@@ -115,24 +142,28 @@ export default function ProductShowcase() {
                             />
                         </div>
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {filteredProducts.map((product) => (
-                                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                                    <Image
-                                        src={product.image}
-                                        alt={product.name}
-                                        width={300}
-                                        height={200}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                    <div className="p-4">
-                                        <h3 className="font-semibold text-lg mb-2 text-[#4A4947]">{product.name}</h3>
-                                        <p className="text-[#4A4947]/80 mb-4">${product.price.toFixed(2)}</p>
-                                        <Button className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90">
-                                            Add to Cart
-                                        </Button>
+                            {filteredProducts.map((product) => {
+                                const productImages = parseImages(product.images[0]);
+                                console.log(productImages);
+                                return (
+                                    <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                                        <Image
+                                            src={productImages[0]}
+                                            alt={product.title}
+                                            width={300}
+                                            height={200}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                        <div className="p-4">
+                                            <h3 className="font-semibold text-lg mb-2 text-[#4A4947]">{product.title}</h3>
+                                            <p className="text-[#4A4947]/80 mb-4">${product.price.toFixed(2)}</p>
+                                            <Button className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90">
+                                                Add to Cart
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         {filteredProducts.length === 0 && (
                             <p className="text-center text-[#4A4947]">No products found. Try adjusting your filters.</p>

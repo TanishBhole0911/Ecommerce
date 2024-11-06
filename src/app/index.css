@@ -19,7 +19,7 @@
         bottom: 0;
         /* Bottom ko 0 set karna */
         background-image: url("./../../public/banner.jpg");
-        background-size: cover;
+        background-size:cover;
         /* Background ko cover karna */
         filter: blur(5px);
         /* Yahan par filter apply karna */
