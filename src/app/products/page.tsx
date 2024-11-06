@@ -1,20 +1,24 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { ShoppingCart, Search, Filter, X } from "lucide-react"
+import { ShoppingCart, Search, Filter, X, ShoppingBagIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { parseCookies } from 'nookies'; // Import parseCookies from nookies
 
 export default function ProductShowcase() {
     const [searchTerm, setSearchTerm] = useState("")
     const [categoryFilter, setCategoryFilter] = useState("All")
     const [priceRange, setPriceRange] = useState([0, 100])
     const [isFilterVisible, setIsFilterVisible] = useState(true)
+    const [cartItemCount, setCartItemCount] = useState(0);
+    const router = useRouter();
     type Product = {
-        id: number;
+        _id: number;
         title: string;
         price: number;
         description: string;
@@ -43,6 +47,44 @@ export default function ProductShowcase() {
         }
     }
 
+    async function fetchCart() {
+        try {
+            const cookies = parseCookies();
+            const token = cookies['jwt']; // Get JWT from cookies
+            const response = await fetch('http://localhost:5000/cart/itemsCount', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            setCartItemCount(data.itemsCount); // Assuming the API returns totalItems
+        } catch (error) {
+            console.error('Error fetching cart:', error);
+        }
+    }
+
+    async function addToCart(productId: number) {
+        try {
+            const cookies = parseCookies();
+            const token = cookies['jwt']; // Get JWT from cookies
+            const response = await fetch('http://localhost:5000/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ productId, quantity: 1 })
+            });
+            if (response.ok) {
+                fetchCart(); // Refresh cart item count
+            } else {
+                console.error('Error adding to cart:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+        }
+    }
+
     const filteredProducts = products.filter(product =>
         product.title && product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (categoryFilter === "All" || product.category.name === categoryFilter) &&
@@ -51,13 +93,17 @@ export default function ProductShowcase() {
 
     const parseImages = (images: string) => {
         const urlMatch = images.match(/https?:\/\/[^\\\s"']+/);
-        const Parsed = "/" + urlMatch[0];
-        return Parsed;
+        if (urlMatch) {
+            const Parsed = "/" + urlMatch[0];
+            return Parsed;
+        }
+        return "";
     };
     useEffect(() => {
-        fetchProducts().then((products) => products.map((product) => {
+        fetchProducts().then((products) => products.map((product: Product) => {
             const productImages = parseImages(product.images[0]);
-        }))
+        }));
+        fetchCart(); // Fetch cart data on component mount
     }, []);
 
     return (
@@ -68,14 +114,14 @@ export default function ProductShowcase() {
                     <span className="font-bold text-xl text-[#4A4947]">ShopEase</span>
                 </Link>
                 <nav className="ml-auto flex gap-4 sm:gap-6">
-                    <Link className="text-sm font-medium text-[#4A4947] hover:text-[#B17457] transition-colors" href="#">
-                        Home
-                    </Link>
-                    <Link className="text-sm font-medium text-[#4A4947] hover:text-[#B17457] transition-colors" href="#">
-                        About
-                    </Link>
-                    <Link className="text-sm font-medium text-[#4A4947] hover:text-[#B17457] transition-colors" href="#">
-                        Contact
+                    <Link className="text-sm font-medium text-[#4A4947] hover:text-[#B17457] transition-colors" href="/cart">
+                        <div className="relative">
+                            <ShoppingBagIcon className="h-6 w-6" />
+
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                {cartItemCount}
+                            </span>
+                        </div>
                     </Link>
                 </nav>
             </header>
@@ -144,9 +190,12 @@ export default function ProductShowcase() {
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {filteredProducts.map((product) => {
                                 const productImages = parseImages(product.images[0]);
-                                console.log(productImages);
                                 return (
-                                    <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                                    <div
+                                        key={product._id}
+                                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                                        onClick={() => router.push(`/products/${product._id}`)}
+                                    >
                                         <Image
                                             src={productImages[0]}
                                             alt={product.title}
@@ -157,7 +206,13 @@ export default function ProductShowcase() {
                                         <div className="p-4">
                                             <h3 className="font-semibold text-lg mb-2 text-[#4A4947]">{product.title}</h3>
                                             <p className="text-[#4A4947]/80 mb-4">${product.price.toFixed(2)}</p>
-                                            <Button className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90">
+                                            <Button
+                                                className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    addToCart(product._id);
+                                                }}
+                                            >
                                                 Add to Cart
                                             </Button>
                                         </div>
