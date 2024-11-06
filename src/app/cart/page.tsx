@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { parseCookies } from 'nookies';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Minus, Plus, X, ArrowRight, Trash } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ShoppingCart, Minus, Plus, ArrowRight, Trash, CreditCard, Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { title } from 'process';
+import { useRouter } from 'next/navigation';
 
 interface CartItem {
     id: number;
@@ -16,16 +18,105 @@ interface CartItem {
     image: string;
 }
 
+function PaymentModal({ isOpen, onClose, total, onCheckout }: { isOpen: boolean; onClose: () => void; total: number; onCheckout: () => void }) {
+    const [cardNumber, setCardNumber] = useState('');
+    const [cardName, setCardName] = useState('');
+    const [expiryDate, setExpiryDate] = useState('');
+    const [cvv, setCvv] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Here you would typically process the payment
+        console.log('Processing payment:', { cardNumber, cardName, expiryDate, cvv });
+        onCheckout();
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#FAF7F0] p-8 rounded-lg max-w-md w-full">
+                <h2 className="text-2xl font-bold text-[#4A4947] mb-6">Payment Details</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="card-number">Card Number</Label>
+                        <div className="relative">
+                            <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#B17457]" />
+                            <Input
+                                id="card-number"
+                                placeholder="1234 5678 9012 3456"
+                                className="pl-10 bg-[#FAF7F0] border-[#D8D2C2] text-[#4A4947]"
+                                value={cardNumber}
+                                onChange={(e) => setCardNumber(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="card-name">Name on Card</Label>
+                        <Input
+                            id="card-name"
+                            placeholder="John Doe"
+                            className="bg-[#FAF7F0] border-[#D8D2C2] text-[#4A4947]"
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="expiry-date">Expiry Date</Label>
+                            <Input
+                                id="expiry-date"
+                                placeholder="MM/YY"
+                                className="bg-[#FAF7F0] border-[#D8D2C2] text-[#4A4947]"
+                                value={expiryDate}
+                                onChange={(e) => setExpiryDate(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="cvv">CVV</Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#B17457]" />
+                                <Input
+                                    id="cvv"
+                                    placeholder="123"
+                                    className="pl-10 bg-[#FAF7F0] border-[#D8D2C2] text-[#4A4947]"
+                                    value={cvv}
+                                    onChange={(e) => setCvv(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <Button type="submit" className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90">
+                        Pay ${total.toFixed(2)}
+                    </Button>
+                </form>
+                <Button onClick={onClose} variant="ghost" className="mt-4 w-full">
+                    Cancel
+                </Button>
+            </div>
+        </div>
+    );
+}
+
 export default function CartPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const router = useRouter();
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     useEffect(() => {
         async function fetchCart() {
             try {
                 const cookies = parseCookies();
                 const token = cookies['jwt'];
-                const response = await fetch('http://localhost:5000/cart', {
+                const response = await fetch(`${API_BASE_URL}/cart`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -49,11 +140,12 @@ export default function CartPage() {
 
         fetchCart();
     }, []);
+
     async function QuantityToCart(productId: number, change: number) {
         try {
             const cookies = parseCookies();
-            const token = cookies['jwt']; // Get JWT from cookies
-            const response = await fetch('http://localhost:5000/cart/setQuantity', {
+            const token = cookies['jwt'];
+            const response = await fetch(`${API_BASE_URL}/cart/setQuantity`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,14 +154,14 @@ export default function CartPage() {
                 body: JSON.stringify({ productId, quantity: change })
             });
             if (response.ok) {
+                // Handle successful quantity update
             } else {
-                console.error('Error adding to cart:', response.statusText);
+                console.error('Error updating quantity:', response.statusText);
             }
         } catch (error) {
-            console.error('Error adding to cart:', error);
+            console.error('Error updating quantity:', error);
         }
     }
-
 
     const parseImages = (images: string) => {
         const urlMatch = images.match(/https?:\/\/[^\\\s"']+/);
@@ -87,14 +179,13 @@ export default function CartPage() {
             )
         );
         QuantityToCart(id, change);
-
     };
 
     const removeItem = async (id: number) => {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt'];
-            const response = await fetch(`http://localhost:5000/cart/remove/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/cart/remove/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -107,6 +198,29 @@ export default function CartPage() {
             }
         } catch (error) {
             console.error('Error removing item from cart:', error);
+        }
+    };
+
+    const checkout = async () => {
+        try {
+            const cookies = parseCookies();
+            const token = cookies['jwt'];
+            const response = await fetch(`${API_BASE_URL}/cart/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ items: cartItems })
+            });
+            if (response.ok) {
+                console.log('Checkout successful');
+                router.push("/products")
+            } else {
+                console.error('Error during checkout:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error during checkout:', error);
         }
     };
 
@@ -140,7 +254,7 @@ export default function CartPage() {
                 ) : (
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-2 space-y-6">
-                            {cartItems.map((item, _) => (
+                            {cartItems.map((item) => (
                                 <div key={item.id} className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow">
                                     <Image
                                         src={parseImages(item.image)}
@@ -198,7 +312,10 @@ export default function CartPage() {
                                 <span>Total</span>
                                 <span>${total.toFixed(2)}</span>
                             </div>
-                            <Button className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90">
+                            <Button
+                                className="w-full bg-[#B17457] text-[#FAF7F0] hover:bg-[#B17457]/90"
+                                onClick={() => setIsPaymentModalOpen(true)}
+                            >
                                 Proceed to Checkout
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -224,6 +341,12 @@ export default function CartPage() {
                     </div>
                 </div>
             </footer>
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                total={total}
+                onCheckout={checkout}
+            />
         </div>
     );
 }

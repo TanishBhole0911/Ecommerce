@@ -10,6 +10,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { parseCookies } from 'nookies'; // Import parseCookies from nookies
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function ProductShowcase() {
     const [searchTerm, setSearchTerm] = useState("")
     const [categoryFilter, setCategoryFilter] = useState("All")
@@ -38,7 +40,7 @@ export default function ProductShowcase() {
     const toggleFilters = () => setIsFilterVisible(!isFilterVisible)
     async function fetchProducts() {
         try {
-            const response = await fetch('http://localhost:5000/getProducts');
+            const response = await fetch(`${API_BASE_URL}/getProducts`);
             const data = await response.json();
             setProducts(data);
             return data;
@@ -51,7 +53,7 @@ export default function ProductShowcase() {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt']; // Get JWT from cookies
-            const response = await fetch('http://localhost:5000/cart/itemsCount', {
+            const response = await fetch(`${API_BASE_URL}/cart/itemsCount`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -67,7 +69,7 @@ export default function ProductShowcase() {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt']; // Get JWT from cookies
-            const response = await fetch('http://localhost:5000/cart/add', {
+            const response = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

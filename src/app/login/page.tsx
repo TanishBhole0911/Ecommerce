@@ -10,6 +10,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function AuthPage() {
     const [loginEmail, setLoginEmail] = useState('')
     const [loginPassword, setLoginPassword] = useState('')
@@ -20,7 +22,7 @@ export default function AuthPage() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/login', {
+            const response = await axios.post(`${API_BASE_URL}/login`, {
                 email: loginEmail,
                 password: loginPassword
             }, {
@@ -39,7 +41,7 @@ export default function AuthPage() {
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/signup', {
+            const response = await axios.post(`${API_BASE_URL}/signup`, {
                 username: signupName,
                 password: signupPassword,
                 email: signupEmail

@@ -18,6 +18,8 @@ interface Product {
     rating: 3.5
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function ProductDetailPage() {
     const [quantity, setQuantity] = useState(1)
     const [product, setProduct] = useState<Product | null>(null)
@@ -26,7 +28,7 @@ export default function ProductDetailPage() {
 
     useEffect(() => {
         if (id) {
-            fetch(`http://localhost:5000/products/${id}`)
+            fetch(`${API_BASE_URL}/products/${id}`)
                 .then(response => response.json())
                 .then(data => setProduct(data))
                 .catch(error => console.error('Error fetching product:', error))
@@ -36,7 +38,7 @@ export default function ProductDetailPage() {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt']; // Get JWT from cookies
-            const response = await fetch('http://localhost:5000/cart/itemsCount', {
+            const response = await fetch(`${API_BASE_URL}/cart/itemsCount`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -53,7 +55,7 @@ export default function ProductDetailPage() {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt']; // Get JWT from cookies
-            const response = await fetch('http://localhost:5000/cart/add', {
+            const response = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
