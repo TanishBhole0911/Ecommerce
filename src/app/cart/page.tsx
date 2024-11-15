@@ -6,28 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Minus, Plus, ArrowRight, Trash, CreditCard, Lock, Dumbbell, Variable } from 'lucide-react';
+import { MapPin, X, Phone, CheckCircle, Minus, Plus, ArrowRight, Trash, Dumbbell } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 interface CartItem {
-    id: number;
+    id: string;
     title: string;
     price: number;
     quantity: number;
     image: string;
-    variant: number;
+    variant: string;
 }
 
 function PaymentModal({ isOpen, onClose, total, onCheckout }: { isOpen: boolean; onClose: () => void; total: number; onCheckout: () => void }) {
-    const [cardNumber, setCardNumber] = useState('');
-    const [cardName, setCardName] = useState('');
-    const [expiryDate, setExpiryDate] = useState('');
-    const [cvv, setCvv] = useState('');
+    const [address, setAddress] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Processing payment:', { cardNumber, cardName, expiryDate, cvv });
         onCheckout();
         onClose();
     };
@@ -37,67 +34,49 @@ function PaymentModal({ isOpen, onClose, total, onCheckout }: { isOpen: boolean;
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-black p-8 rounded-lg max-w-md w-full">
-                <h2 className="text-2xl font-bold text-white mb-6">Payment Details</h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-white">Order Confirmation</h2>
+                    <Button onClick={onClose} variant="ghost" className="text-[#90FF00] hover:bg-[#333333] p-1">
+                        <X className="h-6 w-6" />
+                    </Button>
+                </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="card-number" className="text-white">Card Number</Label>
+                        <Label htmlFor="address" className="text-white">Delivery Address</Label>
                         <div className="relative">
-                            <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#90FF00]" />
+                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#90FF00]" />
                             <Input
-                                id="card-number"
-                                placeholder="1234 5678 9012 3456"
+                                id="address"
+                                placeholder="123 Main St, City, Country"
                                 className="pl-10 bg-[#333333] border-[#90FF00] text-white"
-                                value={cardNumber}
-                                onChange={(e) => setCardNumber(e.target.value)}
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
                                 required
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="card-name" className="text-white">Name on Card</Label>
-                        <Input
-                            id="card-name"
-                            placeholder="John Doe"
-                            className="bg-[#333333] border-[#90FF00] text-white"
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="expiry-date" className="text-white">Expiry Date</Label>
+                        <Label htmlFor="phone-number" className="text-white">Phone Number</Label>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#90FF00]" />
                             <Input
-                                id="expiry-date"
-                                placeholder="MM/YY"
-                                className="bg-[#333333] border-[#90FF00] text-white"
-                                value={expiryDate}
-                                onChange={(e) => setExpiryDate(e.target.value)}
+                                id="phone-number"
+                                placeholder="+1 234 567 8900"
+                                className="pl-10 bg-[#333333] border-[#90FF00] text-white"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="cvv" className="text-white">CVV</Label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#90FF00]" />
-                                <Input
-                                    id="cvv"
-                                    placeholder="123"
-                                    className="pl-10 bg-[#333333] border-[#90FF00] text-white"
-                                    value={cvv}
-                                    onChange={(e) => setCvv(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
+                    </div>
+                    <div className="bg-[#333333] p-4 rounded-lg">
+                        <p className="text-white mb-2">Order Summary:</p>
+                        <p className="text-[#90FF00] font-bold">Total: ₹{total.toFixed(2)}</p>
                     </div>
                     <Button type="submit" className="w-full bg-[#90FF00] text-black hover:bg-[#90FF00]/90">
-                        Pay ${total.toFixed(2)}
+                        <CheckCircle className="mr-2 h-4 w-4" /> Confirm Order
                     </Button>
                 </form>
-                <Button onClick={onClose} variant="ghost" className="mt-4 w-full text-[#90FF00] hover:bg-[#333333]">
-                    Cancel
-                </Button>
             </div>
         </div>
     );
@@ -110,13 +89,13 @@ export default function CartPage() {
     const router = useRouter();
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
     const Payment = async () => {
         try {
             const transactionId = "Tr-" + uuidv4().toString().slice(-6);
             const response = await fetch("/api/payrequest", {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     merchantTransactionId: transactionId,
@@ -145,14 +124,15 @@ export default function CartPage() {
                     }
                 });
                 const data = await response.json();
-                const items = data.items.map((item: any) => ({
-                    id: item.productId._id,
-                    title: item.productId.title,
-                    price: item.productId.price,
-                    quantity: item.quantity,
-                    image: item.productId.images[0],
-                    variant: item.productId.variant
-                }));
+                const items = data.items.map((item: any) => (
+                    console.log(item), {
+                        id: item.productId,
+                        title: item.title,
+                        price: item.price,
+                        quantity: item.quantity,
+                        variant: item.variantId,
+                        image: item.image
+                    }));
                 console.log(items);
                 setCartItems(items);
                 setIsLoading(false);
@@ -165,7 +145,7 @@ export default function CartPage() {
         fetchCart();
     }, []);
 
-    async function QuantityToCart(productId: number, change: number, varaint: number) {
+    async function QuantityToCart(productId: string, change: number, varaint: string) {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt'];
@@ -185,16 +165,12 @@ export default function CartPage() {
         }
     }
 
-    const parseImages = (images: string) => {
-        const urlMatch = images.match(/https?:\/\/[^\\\s"']+/);
-        if (urlMatch) {
-            const Parsed = "/" + urlMatch[0];
-            return Parsed;
-        }
-        return "";
+    const parseImages = (id: string, image: string) => {
+        const images = `https://isf-p4u.s3.ap-south-1.amazonaws.com/${id}/${image}`;
+        return images;
     };
 
-    const setQuantity = (id: number, change: number, variant: number) => {
+    const setQuantity = (id: string, change: number, variant: string) => {
         setCartItems(items =>
             items.map(item =>
                 item.id === id ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
@@ -203,7 +179,7 @@ export default function CartPage() {
         QuantityToCart(id, change, variant);
     };
 
-    const removeItem = async (id: number, variantId: number) => {
+    const removeItem = async (id: string, variantId: string) => {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt'];
@@ -249,8 +225,7 @@ export default function CartPage() {
     };
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const tax = subtotal * 0.1; // Assuming 10% tax
-    const total = subtotal + tax;
+    const total = subtotal;
 
     if (isLoading) {
         return <div className="text-white">Loading...</div>;
@@ -281,7 +256,7 @@ export default function CartPage() {
                             {cartItems.map((item) => (
                                 <div key={item.id} className="flex items-center space-x-4 bg-[#333333] p-4 rounded-lg shadow">
                                     <Image
-                                        src={parseImages(item.image)}
+                                        src={parseImages(item.id, item.image)}
                                         alt={item.title}
                                         width={80}
                                         height={80}
@@ -289,7 +264,7 @@ export default function CartPage() {
                                     />
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-white">{item.title}</h3>
-                                        <p className="text-white/80">${item.price.toFixed(2)}</p>
+                                        <p className="text-white/80">₹{item.price.toFixed(2)}</p>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Button
@@ -326,15 +301,11 @@ export default function CartPage() {
                             <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
                             <div className="flex justify-between text-white">
                                 <span>Subtotal</span>
-                                <span>${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-white">
-                                <span>Tax</span>
-                                <span>${tax.toFixed(2)}</span>
+                                <span>₹{subtotal.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-white font-semibold text-lg">
                                 <span>Total</span>
-                                <span>${total.toFixed(2)}</span>
+                                <span>₹{total.toFixed(2)}</span>
                             </div>
                             <Button
                                 className="w-full bg-[#90FF00] text-black hover:bg-[#90FF00]/90"

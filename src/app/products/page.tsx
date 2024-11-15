@@ -12,7 +12,7 @@ import { parseCookies } from 'nookies'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 interface Variant {
-    _id: number;
+    _id: string;
     name: string;
     price: number;
 }
@@ -33,7 +33,7 @@ export default function ProductShowcase() {
         creationAt: Date;
         updatedAt: Date;
         category: string;
-        variant: [Variant]
+        variants: [Variant]
     };
 
     const [products, setProducts] = useState<Product[]>([])
@@ -44,6 +44,7 @@ export default function ProductShowcase() {
             const response = await fetch(`${API_BASE_URL}/getProducts`);
             const data = await response.json();
             setProducts(data);
+            console.log(data)
             return data;
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -66,17 +67,19 @@ export default function ProductShowcase() {
         }
     }
 
-    async function addToCart(productId: string) {
+    async function addToCart(productId: string, variantId: string) {
         try {
             const cookies = parseCookies();
             const token = cookies['jwt'];
+            const data = JSON.stringify({ productId, variantId, quantity: 1 })
+            console.log(data);
             const response = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ productId, quantity: 1 })
+                body: data
             });
             if (response.ok) {
                 fetchCart();
@@ -210,7 +213,7 @@ export default function ProductShowcase() {
                                                 className="w-full bg-[#90FF00] text-black hover:bg-[#90FF00]/90"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    addToCart(product._id);
+                                                    addToCart(product._id, product.variants[0]._id);
                                                 }}
                                             >
                                                 Add to Cart
