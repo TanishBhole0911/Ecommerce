@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, X, Phone, CheckCircle, Minus, Plus, ArrowRight, Trash, Dumbbell } from 'lucide-react';
+import { MapPin,X,Phone,CheckCircle, Minus, Plus, ArrowRight, Trash, CreditCard, Lock, Dumbbell, Variable } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
@@ -20,8 +20,8 @@ interface CartItem {
 }
 
 function PaymentModal({ isOpen, onClose, total, onCheckout }: { isOpen: boolean; onClose: () => void; total: number; onCheckout: () => void }) {
-    const [address, setAddress] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
+    const [address,setAddress] = useState('');
+    const [phoneNumber,setPhoneNumber] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,13 +89,13 @@ export default function CartPage() {
     const router = useRouter();
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
     const Payment = async () => {
         try {
             const transactionId = "Tr-" + uuidv4().toString().slice(-6);
             const response = await fetch("/api/payrequest", {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     merchantTransactionId: transactionId,
