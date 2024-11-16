@@ -7,7 +7,7 @@ import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, Dumbbell, X } from '
 import Image from "next/image"
 import Link from "next/link"
 import { parseCookies, setCookie } from 'nookies'
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface UserDetails {
   name: string;
