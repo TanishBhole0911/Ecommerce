@@ -1,144 +1,19 @@
 'use client';
-import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, Dumbbell, X } from 'lucide-react'
+import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, Dumbbell } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { parseCookies, setCookie } from 'nookies'
-
-interface UserDetails {
-  name: string;
-  email: string;
-  age: string;
-}
-
-async function saveEmail(details: UserDetails) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/saveEmail`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(details),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to save email');
-  }
-
-  return response.json();
-}
-
-function Modal({ isOpen, onClose, onSubmit }: { isOpen: boolean; onClose: () => void; onSubmit: (details: UserDetails) => void }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [age, setAge] = useState('');
-
-  useEffect(() => {
-    const cookies = parseCookies();
-    const storedDetails = cookies['userDetails'];
-    if (storedDetails) {
-      onClose();
-    }
-  }, [onClose]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const details = { name, email, age };
-    try {
-      await saveEmail(details);
-      onSubmit(details);
-    } catch (error) {
-      console.error('Error saving email:', error);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#333333] p-8 rounded-lg max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-white">Welcome to PROTEIN4U</h2>
-          <Button variant="ghost" onClick={onClose} className="text-white hover:text-[#90FF00]">
-            <X className="h-6 w-6" />
-          </Button>
-        </div>
-        <p className="text-white mb-4">Please provide some details to continue:</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name" className="text-white">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-black text-white border-[#90FF00]"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="email" className="text-white">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-black text-white border-[#90FF00]"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="age" className="text-white">Age</Label>
-            <Input
-              id="age"
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              className="bg-black text-white border-[#90FF00]"
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full bg-[#90FF00] text-black hover:bg-[#90FF00]/90">
-            Submit
-          </Button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
+import { parseCookies } from 'nookies'
+import { useState, useEffect } from 'react'
 export default function LandingPage() {
-  const [userId, setUserId] = useState('');
-  const [showModal, setShowModal] = useState(true);
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [userId, setUserId] = useState('')
 
   useEffect(() => {
-    const cookies = parseCookies();
-    const token = cookies['jwt'];
-    setUserId(token);
-
-    const storedDetails = cookies['userDetails'];
-    if (storedDetails) {
-      setUserDetails(JSON.parse(storedDetails));
-      setShowModal(false);
-    }
-  }, []);
-
-  const handleModalSubmit = (details: UserDetails) => {
-    setUserDetails(details);
-    
-    setCookie(null, 'userDetails', JSON.stringify(details), {
-      maxAge: 30 * 24 * 60 * 60,
-      path: '/',
-    });
-    setShowModal(false);
-  };
-
-  if (showModal) {
-    return <Modal isOpen={showModal} onClose={() => { }} onSubmit={handleModalSubmit} />;
-  }
-
+    const cookies = parseCookies()
+    const token = cookies['jwt']
+    setUserId(token)
+  }, [])
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <header className="px-4 lg:px-6 h-16 flex items-center">
@@ -147,23 +22,28 @@ export default function LandingPage() {
           <span className="font-bold text-xl text-white">PROTEIN4U</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          {userId ? (
-            <>
-              <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
-                Products
-              </Link>
-              <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
-                About
-              </Link>
-              <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
-                Contact
-              </Link>
-            </>
-          ) : (
-            <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="/login">
-              Login
-            </Link>
-          )}
+          {userId ?
+            (
+              <>
+                <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
+                  Products
+                </Link>
+                <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
+                  About
+                </Link>
+                <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="#">
+                  Contact
+                </Link>
+              </>
+            ) :
+            (
+              <>
+                <Link className="text-sm font-medium hover:underline underline-offset-4 text-white" href="/login">
+                  Login
+                </Link>
+              </>
+            )
+          }
         </nav>
       </header>
       <main className="flex-1">
@@ -205,6 +85,32 @@ export default function LandingPage() {
                   <feature.icon className="h-12 w-12 mb-4 text-[#90FF00]" />
                   <h3 className="font-bold text-xl mb-2 text-white">{feature.title}</h3>
                   <p className="text-white">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-black">
+          <div className="container px-4 md:px-6 mx-auto">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12 text-white">Featured Products</h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { name: "Wireless Earbuds", price: "$99.99", image: "/placeholder.svg" },
+                { name: "Smart Watch", price: "$199.99", image: "/placeholder.svg" },
+                { name: "Laptop Backpack", price: "$59.99", image: "/placeholder.svg" },
+                { name: "4K Action Camera", price: "$249.99", image: "/placeholder.svg" },
+              ].map((product, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  <Image
+                    alt={product.name}
+                    className="aspect-square object-cover rounded-lg overflow-hidden mb-4"
+                    height="200"
+                    src={product.image}
+                    width="200"
+                  />
+                  <h3 className="font-bold text-lg mb-2 text-white">{product.name}</h3>
+                  <p className="text-white mb-4">{product.price}</p>
+                  <Button className="bg-[#90FF00] text-black hover:bg-[#90FF00]/90">Add to Cart</Button>
                 </div>
               ))}
             </div>
