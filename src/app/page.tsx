@@ -7,6 +7,7 @@ import { ShoppingCart, Star, Truck, CreditCard, ArrowRight, Dumbbell, X } from '
 import Image from "next/image"
 import Link from "next/link"
 import { parseCookies, setCookie } from 'nookies'
+import { useRouter } from 'next/router';
 
 interface UserDetails {
   name: string;
@@ -139,6 +140,11 @@ export default function LandingPage() {
     return <Modal isOpen={showModal} onClose={() => { }} onSubmit={handleModalSubmit} />;
   }
 
+  const handleBrowseProducts = () => {
+    const router = useRouter();
+    router.push('/products'); // Redirects to /products
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <header className="px-4 lg:px-6 h-16 flex items-center">
@@ -222,7 +228,7 @@ export default function LandingPage() {
               <Button size="lg" className="bg-[#90FF00] text-black hover:bg-[#90FF00]/90">
                 Create an Account
               </Button>
-              <Button size="lg" variant="outline" className="text-[#90FF00] border-[#90FF00] hover:bg-[#90FF00] hover:text-black">
+              <Button size="lg" variant="outline" className="text-[#90FF00] border-[#90FF00] hover:bg-[#90FF00] hover:text-black" onClick={handleBrowseProducts}>
                 Browse Products
               </Button>
             </div>
