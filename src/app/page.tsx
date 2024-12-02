@@ -16,6 +16,21 @@ export default function LandingPage() {
     setUserId(token)
   }, [])
 
+  const brandPhotos = [
+    { src: "/brand-photos/Image_1.jpg", alt: "Brand photo 1" },
+    { src: "/brand-photos/Image_2.png", alt: "Brand photo 2" },
+    { src: "/brand-photos/Image_3.png", alt: "Brand photo 3" },
+    { src: "/brand-photos/Image_4.png", alt: "Brand photo 4" },
+    { src: "/brand-photos/Image_5.png", alt: "Brand photo 5" },
+    { src: "/brand-photos/Image_6.jpg", alt: "Brand photo 6" },
+    { src: "/brand-photos/Image_7.jpeg", alt: "Brand photo 7" },
+    { src: "/brand-photos/Image_8.png", alt: "Brand photo 8" },
+    { src: "/brand-photos/Image_9.jpg", alt: "Brand photo 9" },
+    { src: "/brand-photos/Image_11.png", alt: "Brand photo 11" },
+    { src: "/brand-photos/Image_12.png", alt: "Brand photo 12" },
+    { src: "/brand-photos/Image_13.webp", alt: "Brand photo 13" }
+  ]
+
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <header className="px-4 lg:px-6 h-16 flex items-center">
@@ -40,10 +55,11 @@ export default function LandingPage() {
           <h1 className="text-3xl font-bold text-white mb-4">PROTEIN4U</h1>
           <div className="mb-4">
             <Image
-              src="/placeholder.svg"
+              src="/Jod.jpeg"
               alt="PROTEIN4U Logo"
-              width={200}
-              height={200}
+              width={400}
+              height={400}
+              objectFit="cover"
               className="mx-auto rounded-full"
             />
           </div>
@@ -51,19 +67,17 @@ export default function LandingPage() {
         </div>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Products:</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Brands We Provide :</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="bg-[#333333] rounded-lg p-4 hover:border hover:border-[#90FF00] transition-all">
+            {brandPhotos.map((photo, index) => (
+              <div key={index} className="bg-[#333333] rounded-lg p-4 hover:border hover:border-[#90FF00] transition-all h-64">
                 <Image
-                  src="/placeholder.svg"
-                  alt={`Product ${item}`}
-                  width={200}
-                  height={200}
-                  className="w-full h-auto rounded-md mb-2"
+                  src={photo.src}
+                  alt={photo.alt}
+                  width={400}
+                  height={400}
+                  className="w-full h-full rounded-md mb-2 m-auto"
                 />
-                <h3 className="text-white font-medium">Product {item}</h3>
-                <p className="text-[#90FF00]">₹999.99</p>
               </div>
             ))}
           </div>
@@ -98,10 +112,10 @@ export default function LandingPage() {
 
         <section className="text-center">
           <Link
-            href="https://wordpress.com"
+            href="https://chat.whatsapp.com/BVuAb1XsB3QGFx2U6KJH2q"
             className="inline-block bg-[#90FF00] text-black px-6 py-3 rounded-lg font-medium hover:bg-[#90FF00]/90 transition-colors"
           >
-            Visit Our Blog
+            Join Our Community
           </Link>
         </section>
       </main>
